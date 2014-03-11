@@ -6,7 +6,7 @@ Embeddable JS library to add a speed-read box to your page.
 I'm not a developer, just give it to me
 ---------------------------------------
 
-If you're on Firefox and you have GreaseMonkey installed, just click [here](https://raw.github.com/jelford/spool/master/spool.user.js) and click on all the boxes that say things like "enable" or "confirm."
+If you're on Firefox and you have GreaseMonkey installed, just click [here](https://raw.github.com/jelford/spool/master/spool.user.js) and click on all the boxes that say things like "enable" or "confirm" or "trust."
 
 developers
 ==========
