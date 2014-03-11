@@ -8,6 +8,7 @@
 	<meta name="author" content="">
 	<link rel="stylesheet" href="style.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+    <script src="spool.js"></script>
 </head>
 
 <body>
@@ -115,7 +116,16 @@
 
 
 	</body>
-	<script src="script.js"></script>
+	<script type="application/javascript">
+
+        $(document.body).click((function(spool) {
+                return function(event) {
+                    var target = $(event.target);
+                    spool.read(target);
+                };
+            })(spool()));
+
+    </script>
 </body>
 
 </html>

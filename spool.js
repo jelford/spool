@@ -1,10 +1,15 @@
-
-
-
-function _spool() {
+function spool() {
     const DEFAULT_WPM = 200;
 
     var spool = { };
+
+    var getUserPreference = function(label) {
+        return window.localStorage.getItem(label);
+    }
+
+    var setUserPreference = function(key, value) {
+        return window.localStorage.setItem(key, value);
+    }
 
     var _workingPane = spool.workingPane = $('<div id="workingPane" class="spool-read-box">'); // give it the same class as the main readbox to ensure any font attributes are the same
     _workingPane.css('display', 'block');
@@ -81,8 +86,8 @@ function _spool() {
 
         var contentArea = $('<div id="spool-read-box" class="spool-read-box">')
             .append($('<div class="container">')
-            .append($('<div class="marker">'))
-            .append($('<div class="marker">')))
+                .append($('<div class="marker">'))
+                .append($('<div class="marker">')))
             .append(controls).hide();
 
         return contentArea;
@@ -238,14 +243,14 @@ function _spool() {
 
     var setWpm = function(wpm) {
         if (wpm === 'default') {
-            if (window.localStorage['spool-wpm']) {
-                wpm = window.localStorage['spool-wpm'];
+            if (getUserPreference('spool-wpm')) {
+                wpm = getUserPreference('spool-wpm');
             } else {
                 wpm = DEFAULT_WPM;
             }
         }
         spool.wordDuration = (1000*60)/wpm;
-        window.localStorage.setItem('spool-wpm', wpm);
+        setUserPreference('spool-wpm', wpm);
     }
 
     var showParagraphCallback = function(paragraph) {
@@ -253,13 +258,6 @@ function _spool() {
             paragraph.fadeTo('fast', 1);
         }
     }
-
-    _readBox.contentArea.children('.container').last().click(function(event) {
-        if (event.id !== 'display-word') { // don't close if the actual word was clicked
-            _readBox.stop();
-            _readBox.hide();
-        }
-    });
 
     _readBox.contentArea.hover(_readBox.pause.bind(_readBox), _readBox.resume.bind(_readBox));
 
@@ -296,13 +294,3 @@ function _spool() {
 
     return spool;
 }
-
-$(document.body).click((function(spool) {
-        return function(event) {
-            var target = $(event.target);
-            //if (target.prop('tagName') === 'P') {
-                spool.read(target);
-            //}
-        };
-    })(_spool())
-);
