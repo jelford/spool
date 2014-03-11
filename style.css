@@ -4,29 +4,5 @@ body {
 	margin-right: auto;
 }
 
-#readBox {
-	z-index: 2;
-	position: absolute;
-	height: 2.5em;
-	width: 200px;
-	background-color: white;
-}
-
-#readBox p {
-	padding: 0;
-	display: inline;
-}
-
-#readBox .marker {
-	height: .75em;
-	padding: 0;
-	width: 50%;
-    border-right: 1px solid red;
-}
-
-.olp {
-	color: red;
-}
-
 
 
