@@ -16,7 +16,7 @@ function _spool() {
 
     var _fudgeORama = function (pos, word) {
         var wLength = word.length;
-        if (wLength < 5) {
+        if (wLength < 4) {
             return pos;
         }
 
@@ -109,7 +109,8 @@ function _spool() {
             textHolder.offset( { left: center - newWordData.offset } );
 
             if (this.nextWordIndex >= this.words.length) {
-                this.stop();
+                this.pause();
+                window.setTimeout(this.stop.bind(this), 500); // leave a before closing the last word, to avoid a nasty jarring
             }
         },
 
@@ -119,6 +120,7 @@ function _spool() {
 
         stop: function() {
             this.pause();
+            this.hide();
             if (this.finishedCallback) {
                 this.finishedCallback();
             }
@@ -214,7 +216,6 @@ function _spool() {
             event.preventDefault();
             if (!navigationMouseEventData.used) {
                 var howFar = offset(event);
-                console.log(howFar);
                 goBack(Math.floor(howFar));
                 navigationMouseEventData.used = true;
             }
@@ -225,7 +226,6 @@ function _spool() {
         wordContainer
             .mousedown(function(event) {
                 if(event.target.id = 'display-word') {
-                    console.log('gubby');
                     event.preventDefault();
                     navigationMouseEventData.startingX = event.screenX;
                     navigationMouseEventData.used = false;
