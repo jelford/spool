@@ -4,36 +4,6 @@ body {
 	margin-right: auto;
 }
 
-#log {
-	max-height: 10em;
-	height: 10em;
-	overflow-y: scroll;
-	
-	position: fixed;
-	right: 0;
-	top: 0;
-	
-	margin: 0;
-	
-	width: 50%;
-	
-	z-index: 10;
-	
-	background-color: #1D1F21;
-	color: #AAAAAA;
-}
-
-#log p{
-	font-size: 1em;
-	font-family: monospace;
-	margin: 0.2em 0 0 1em;
-	border-top: 1px solid #888888;
-}
-
-#log :last-child {
-	margin-bottom: 0.5em;
-}
-
 #readBox {
 	z-index: 2;
 	position: absolute;
@@ -47,14 +17,11 @@ body {
 	display: inline;
 }
 
-#readBox .left {
-	border-right: 1px solid red;
-}
-
 #readBox .marker {
 	height: .75em;
 	padding: 0;
 	width: 50%;
+    border-right: 1px solid red;
 }
 
 .olp {
