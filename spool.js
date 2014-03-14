@@ -79,7 +79,7 @@ function spool() {
 
     var buildReadBox = function() {
         var style = $('<style type="text/css">')
-        style.html('.spool-read-box{font-size:2em;z-index:2;position:absolute;height:2.5em;width:10em;font-family:sans}.spool-read-box p{padding:0;display:inline}.spool-read-box .marker{height:.75em;padding:0;width:50%;border-right:1px solid red}.spool-read-box .container{width:100%;display:inline-block;background-color:#fff}.spool-read-box .controls{background-color:#fff;opacity:0;font-size:.5em;width:80%;padding-left:10%;padding-right:10%}.spool-read-box:hover .controls{opacity:1}.spool-read-box .controls .navigation-preview{padding:0 .1em}.olp,.spool-read-box .controls .navigation-preview.on{color:red}');
+        style.html('.spool-read-box{font-size:2em;z-index:2;position:absolute;height:2.5em;width:10em;font-family:sans}.spool-read-box p{padding:0;display:inline}.spool-read-box .marker{height:.75em;padding:0;width:50%;border-right:1px solid red}.spool-read-box .container{width:100%;display:inline-block;background-color:#fff}.spool-read-box .controls{background-color:#fff;opacity:0;font-size:.5em;width:80%;padding-left:10%;padding-right:10%}.spool-read-box:hover .controls{opacity:1}.spool-read-box .controls .navigation-preview{padding:0 .1em}.spool-read-box .controls .control-group{display:inline-block;padding:1%}.olp,.spool-read-box .controls .navigation-preview.on{color:red}');
         $(document.body).append(style);
 
         var controls = spool.controls = $('<div class="controls">');
@@ -114,8 +114,7 @@ function spool() {
             textHolder.offset( { left: center - newWordData.offset } );
 
             if (this.nextWordIndex >= this.words.length) {
-                this.pause();
-                window.setTimeout(this.stop.bind(this), 500); // leave a before closing the last word, to avoid a nasty jarring
+                this.finishedCallback();
             }
         },
 
@@ -126,13 +125,13 @@ function spool() {
         stop: function() {
             this.pause();
             this.hide();
-            if (this.finishedCallback) {
-                this.finishedCallback();
-            }
+            this.active = false;
         },
 
         resume: function() {
-            this.intervalId = window.setInterval(this.spoolNextWord.bind(this), spool.wordDuration);
+            if (this.active) {
+                this.intervalId = window.setInterval(this.spoolNextWord.bind(this), spool.wordDuration);
+            }
         },
 
         hide: function() {
@@ -148,6 +147,7 @@ function spool() {
             this.spoolNextWord();
             this.intervalId = window.setInterval(this.spoolNextWord.bind(this), spool.wordDuration);
             this.finishedCallback = finishedCallback;
+            this.active = true;
         },
 
         show: function(targetMidPoint) {
@@ -165,7 +165,7 @@ function spool() {
     $(document.body).append(_readBox.contentArea);
 
     (function() {
-        var wpmControls = $('<div class="wpmControls">');
+        var wpmControls = $('<div class="control-group">');
         var wpmLabel = $('<span>wpm:</span>');
         var wpmSetting = $('<select><option>default</option><option>100</option><option>200</option><option>250</option><option>300</option><option>350</option><option>400</option><option>450</option><option>500</option></select>')
         wpmControls.append(wpmLabel).append(wpmSetting);
@@ -176,6 +176,7 @@ function spool() {
         spool.controls.append(wpmControls);
     })();
 
+    
     (function() {
 
         var goBack = function(howFar) {
@@ -196,7 +197,6 @@ function spool() {
         var offset = function(mouseEvent) {
             return navigationMouseEventData.startingX - mouseEvent.screenX;
         }
-
 
         var showTargetWord = function(event) {
             var howFar = 0;
@@ -224,6 +224,8 @@ function spool() {
                 goBack(Math.floor(howFar));
                 navigationMouseEventData.used = true;
             }
+            beforeWord.hide();
+            afterWord.hide();
             $(document).unbind('mouseup', this);
             $(document).unbind('mousemove', showTargetWord);
         }
@@ -234,6 +236,8 @@ function spool() {
                     event.preventDefault();
                     navigationMouseEventData.startingX = event.screenX;
                     navigationMouseEventData.used = false;
+                    beforeWord.show();
+                    afterWord.show();
                     $(document).mouseup(goBackOnMouseUp.bind(goBackOnMouseUp));
                     $(document).mousemove(showTargetWord.bind(showTargetWord));
                 }
@@ -253,11 +257,41 @@ function spool() {
         setUserPreference('spool-wpm', wpm);
     }
 
-    var showParagraphCallback = function(paragraph) {
-        return function() {
-            paragraph.fadeTo('fast', 1);
-        }
-    }
+    var showMaskedParagraph = function() {
+        spool.maskedParagraph.fadeTo('fast', 1);
+        spool.maskedParagraph = null;
+    };
+
+    (function() {
+        var stopReadingControl = $('<div class="control-group">');
+        var stopReadingButton = $('<button>');
+        stopReadingButton.html('&#x25A0;');
+        stopReadingControl.append(stopReadingButton);
+        spool.controls.append(stopReadingControl);
+        
+        stopReadingButton.click(function() {
+            _readBox.stop();
+            showMaskedParagraph();
+        });
+    })();
+
+    (function() {
+        var autoMoveToNextParagraphControls = $('<div class="control-group">');
+        var autoMoveToNextParagraphToggle = $('<input type="checkbox">');
+        var autoMoveToNextParagraphLabel = $('<label>').text('continuous spool:');
+        autoMoveToNextParagraphControls
+             .append(autoMoveToNextParagraphLabel)
+             .append(autoMoveToNextParagraphToggle);
+        spool.autoMoveNextParagraph = getUserPreference('spool-auto-read-next');
+        autoMoveToNextParagraphToggle.prop('checked', spool.autoMoveNextParagraph);
+        spool.controls.append(autoMoveToNextParagraphControls);
+        
+        autoMoveToNextParagraphToggle.click(function() {
+            spool.autoMoveNextParagraph = $(this).is(':checked');
+            setUserPreference('spool-auto-read-next', spool.autoMoveNextParagraph);
+        });
+    })();
+
 
     _readBox.contentArea.hover(_readBox.pause.bind(_readBox), _readBox.resume.bind(_readBox));
 
@@ -272,13 +306,24 @@ function spool() {
         return sane;
     }
 
+    var ensureCoordinatesOnScreen = function(coords, margin) {
+        var scrollBottom = $(window).scrollTop() + $(window).height();
+
+        if (coords.top + margin > scrollBottom) {
+            $(window).scrollTop(coords.top - $(window).height() + margin);
+        }
+    };
+
     var _readParagraph = spool.read = function(paragraphNode) {
 
         if (paragraphNode.closest(_readBox.contentArea).length > 0) {
             return; // don't accept requests targeted at our own content area
         }
 
-        _readBox.stop();
+        _readBox.pause();
+        if (spool.maskedParagraph) {
+            showMaskedParagraph(); 
+        }
         maskParagraph(paragraphNode);
 
         var sanitizedText = sanitizeText(paragraphNode.text());
@@ -286,8 +331,24 @@ function spool() {
         var paragraphPosition = paragraphNode.offset();
         var paragraphMid = { top: paragraphPosition.top + paragraphNode.height() / 2, left: paragraphPosition.left + paragraphNode.width() / 2 };
 
-        _readBox.show({top: paragraphMid.top, left: paragraphMid.left});
-        _readBox.start(sanitizedText.split(/\s/g).filter(function(word) { return !word.match(/^\s*$/g); }), showParagraphCallback(paragraphNode));
+        ensureCoordinatesOnScreen(paragraphMid, _readBox.contentArea.height() * 1.1);
+
+        _readBox.show(paragraphMid);
+
+        _readBox.start(
+                sanitizedText.split(/\s/g).filter(
+                    function(word) { return !word.match(/^\s*$/g); }), 
+                function() {
+                    showMaskedParagraph();
+                    if (spool.autoMoveNextParagraph) {
+                        var nextParagraph = paragraphNode.next();
+                        if (nextParagraph) {
+                            spool.read(nextParagraph);
+                        }
+                    } else {
+                        _readBox.stop();
+                    }
+                });
     }
 
     setWpm('default');
