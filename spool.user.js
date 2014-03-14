@@ -4,8 +4,8 @@
 // @name spool
 // @namespace com.jameselford.scripts
 // @require https://ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js
-// @require https://raw.github.com/jelford/spool/master/spool.js
-// @version 0.1.3_1
+// @require https://raw.github.com/jelford/spool/master/spool.js?0141
+// @version 0.1.4_1
 // @grant none
 // ==/UserScript==
 
