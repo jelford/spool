@@ -344,10 +344,11 @@ function spool() {
                         var nextParagraph = paragraphNode.next();
                         if (nextParagraph && nextParagraph.text()) {
                             spool.read(nextParagraph);
+                            return;
                         }
-                    } else {
-                        _readBox.stop();
-                    }
+                    } 
+
+                    _readBox.stop();
                 });
     }
 
