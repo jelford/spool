@@ -342,7 +342,7 @@ function spool() {
                     showMaskedParagraph();
                     if (spool.autoMoveNextParagraph) {
                         var nextParagraph = paragraphNode.next();
-                        if (nextParagraph) {
+                        if (nextParagraph && nextParagraph.text()) {
                             spool.read(nextParagraph);
                         }
                     } else {
