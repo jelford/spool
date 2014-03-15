@@ -13,7 +13,7 @@ FAQ
 
 *What will happen when I install the script you just pointed me to?*
 
-When enabled, `spool` will embed itself on any page in your browser. When you're ready to try it out, just click on any area of text, and the speed-read window will pop up, and spool through all the words. The box will always appear in the middle of the section of text, so if you can't see it, try scrolling down.
+When enabled, `spool` will embed itself on any page in your browser. When you're ready to try it out, just hold alt and click on any area of text, and the speed-read window will pop up, and spool through all the words. The box will always appear in the middle of the section of text, so if you can't see it, try scrolling down.
 
 *How do I pause it?*
 
