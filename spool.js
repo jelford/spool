@@ -19,26 +19,40 @@ function spool() {
     _workingPane.css('top', -100);
     $(document.body).append(_workingPane);
 
+    var naturalPairAdjustment = function(pos, word, pair) {
+        if (pos > 0 && word[pos] === pair[1] && word[pos-1] === pair[0]) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+
     var _fudgeORama = function (pos, word) {
-        var wLength = word.length;
+        var wLength = word.replace(/\W$/g, '').length;
         if (wLength < 4) {
             return pos;
         }
 
         var offset = 0
 
-        for (var lookBack = 0; lookBack<2 && pos - lookBack >= 0; ++lookBack) {
-            if ("acemnorsuvwxyz".contains(word[pos-lookBack])) {
+        for (var lookBack = 0; lookBack < 2 && pos - lookBack >= 0; ++lookBack) {
+            if ("acemnorsuvwxz".contains(word[pos-lookBack])) {
                 offset = lookBack;
-            }
+            } 
         }
+
+        offset += naturalPairAdjustment(pos, word, 'ou');
+        offset += naturalPairAdjustment(pos, word, 'ie');
+        offset += naturalPairAdjustment(pos, word, 'gh');
+        offset += naturalPairAdjustment(pos, word, 'ph');
+        offset += naturalPairAdjustment(pos, word, 'th');
 
         return pos - offset;
     };
 
     var buildOlpWord = function(word) {
         var wholeWordContainer = $('<span>');
-        wholeWordContainer.text(word);
+        wholeWordContainer.text(word.replace(/\W/g, ''));
         var workingPane = _workingPane
         workingPane.append(wholeWordContainer);
 
@@ -79,7 +93,7 @@ function spool() {
 
     var buildReadBox = function() {
         var style = $('<style type="text/css">')
-        style.html('.spool-read-box{font-size:2em;z-index:2;position:absolute;height:2.5em;width:10em;font-family:sans}.spool-read-box p{padding:0;display:inline}.spool-read-box .marker{height:.75em;padding:0;width:50%;border-right:1px solid red}.spool-read-box .container{width:100%;display:inline-block;background-color:#fff}.spool-read-box .controls{background-color:#fff;opacity:0;font-size:.5em;width:80%;padding-left:10%;padding-right:10%}.spool-read-box:hover .controls{opacity:1}.spool-read-box .controls .navigation-preview{padding:0 .1em}.spool-read-box .controls .control-group{display:inline-block;padding:1%}.olp,.spool-read-box .controls .navigation-preview.on{color:red}');
+        style.html('.spool-read-box{font-size:2em;z-index:2;position:absolute;height:2.5em;width:10em;font-family:sans}.spool-read-box p{padding:0;display:inline}.spool-read-box .marker{height:.75em;padding:0;width:50%;border-right:1px solid red}.spool-read-box .container{width:100%;display:inline-block;background-color:#fff}.spool-read-box .controls{background-color:#fff;opacity:0;font-size:.5em;width:80%;padding-left:10%;padding-right:10%}.spool-read-box:hover .controls{opacity:1}.spool-read-box .controls .navigation-preview{padding:0 .1em}.spool-read-box .controls .control-group{display:inline-block;padding:1%}.spool-read-box .navigation-preview{font-size:.5em}.olp,.spool-read-box .controls .navigation-preview.on{color:red}');
         $(document.body).append(style);
 
         var controls = spool.controls = $('<div class="controls">');
@@ -98,13 +112,12 @@ function spool() {
         nextWordIndex: 0,
         words: [],
         intervalId: null,
-        spoolNextWord: function() {
+        displayWord: function(word) {
+
             var previousTextHolder = this.contentArea.find('p').last();
             if (previousTextHolder) {
                 previousTextHolder.remove();
             }
-
-            var word = this.words[this.nextWordIndex++];
 
             var newWordData = buildOlpWord(word);
             var textHolder = newWordData.element
@@ -112,6 +125,11 @@ function spool() {
 
             var center = textHolder.parent().offset().left + (textHolder.parent().width() / 2);
             textHolder.offset( { left: center - newWordData.offset } );
+        },
+        spoolNextWord: function() {
+
+            var word = this.words[this.nextWordIndex++];
+            this.displayWord(word);
 
             if (this.nextWordIndex >= this.words.length) {
                 this.finishedCallback();
@@ -120,6 +138,7 @@ function spool() {
 
         pause: function() {
             window.clearInterval(this.intervalId);
+            this.intervalId = null;
         },
 
         stop: function() {
@@ -129,7 +148,7 @@ function spool() {
         },
 
         resume: function() {
-            if (this.active) {
+            if (!this.intervalId && this.active) {
                 this.intervalId = window.setInterval(this.spoolNextWord.bind(this), spool.wordDuration);
             }
         },
@@ -189,46 +208,68 @@ function spool() {
         var beforeWord = $('<span class="navigation-preview before">');
         var afterWord = $('<span class="navigation-preview after">');
 
-        spool.controls.append(beforeWord).append(afterWord);
+        _readBox.contentArea.append(beforeWord).append(afterWord);
 
         var navigationMouseEventData = { used: true };
 
 
         var offset = function(mouseEvent) {
-            return navigationMouseEventData.startingX - mouseEvent.screenX;
-        }
+            if (mouseEvent) {
+                var distance = Math.floor((navigationMouseEventData.startingX - mouseEvent.screenX) / 10);
+                console.log(distance);
+                return distance;
+            } else {
+                return 0;
+            }
+        };
 
         var showTargetWord = function(event) {
             var howFar = 0;
             if (!navigationMouseEventData.used) {
                 howFar = offset(event);
+                beforeWord.show();
+                afterWord.show();
+            } else {
+                return;
             }
 
-            beforeIndex = _readBox.nextWordIndex-2 - howFar;
-            afterIndex = _readBox.nextWordIndex - howFar;
+            var newNextWordIndex = Math.min(Math.max(_readBox.nextWordIndex - 1 - howFar, 0), _readBox.words.length - 1);
+
+            beforeIndex = newNextWordIndex - 1;
+            afterIndex = newNextWordIndex + 1;
+
+            var word = _readBox.words[newNextWordIndex];
+            _readBox.displayWord(word);
 
             beforeWord.text(beforeIndex >= 0 ? _readBox.words[beforeIndex] : '');
-            displayWord().text(_readBox.words[_readBox.nextWordIndex-1 - howFar]);
             afterWord.text(afterIndex < _readBox.words.length ? _readBox.words[afterIndex] : '');
 
             var displayWordPosition = displayWord().offset();
 
             beforeWord.offset({top: displayWordPosition.top + displayWord().height() / 2, left: displayWordPosition.left - beforeWord.width()})
             afterWord.offset({top: displayWordPosition.top + displayWord().height() / 2, left: displayWordPosition.left + displayWord().width()})
-        }
+        };
 
         var goBackOnMouseUp = function(event) {
-            event.preventDefault();
-            if (!navigationMouseEventData.used) {
-                var howFar = offset(event);
-                goBack(Math.floor(howFar));
-                navigationMouseEventData.used = true;
+            try {
+                if (!navigationMouseEventData.used) {
+                    navigationMouseEventData.cancelCallbacks();            
+
+                    var howFar = offset(event);
+
+                    navigationMouseEventData.used = true;
+
+                    _readBox.active = navigationMouseEventData.readBoxActive;
+
+                    beforeWord.hide();
+                    afterWord.hide();
+
+                    goBack(howFar);
+                }
+            } catch (e) {
+                console.log(e);
             }
-            beforeWord.hide();
-            afterWord.hide();
-            $(document).unbind('mouseup', this);
-            $(document).unbind('mousemove', showTargetWord);
-        }
+        };
 
         wordContainer
             .mousedown(function(event) {
@@ -236,10 +277,17 @@ function spool() {
                     event.preventDefault();
                     navigationMouseEventData.startingX = event.screenX;
                     navigationMouseEventData.used = false;
-                    beforeWord.show();
-                    afterWord.show();
-                    $(document).mouseup(goBackOnMouseUp.bind(goBackOnMouseUp));
-                    $(document).mousemove(showTargetWord.bind(showTargetWord));
+                    navigationMouseEventData.readBoxActive = _readBox.active;
+                    _readBox.active = false;
+
+                    navigationMouseEventData.cancelCallbacks = function() {
+                        $(document).unbind('mouseup.spool-navigation');
+                        $(document).unbind('mousemove.spool-navigation');
+                    };
+
+                    $(document).bind('mouseup.spool-navigation', goBackOnMouseUp);
+                    $(document).bind('mousemove.spool-navigation', showTargetWord);
+                    showTargetWord();
                 }
             });
 
@@ -300,9 +348,20 @@ function spool() {
         paragraphNode.fadeTo('fast', 0.5);
     }
 
-    var sanitizeText = function(text) {
+    var sanitizeText = window.sane = function(text) {
         var sane = text.trim();
-        sane = sane.replace(/(\s\w+)(\W)(\2+)(\w+\s)/g, '$1 $2 $4');
+        
+        // get rid of dodgey double-hyphenation
+        sane = sane.replace(/(\w+)(\W)(\2+)(\w+)/g, '$1 $2 $4');
+        
+        // split hypenated words
+        sane = sane.replace(/(\w+)([-:@])(\w+)/g, '$1$2 $3');
+
+        // try to split long words according to natural rules
+        sane = sane.replace(/(\w{7,})([aeiou]\w{3,})\b/g, '$1- $2');
+
+        // split any remaining big words
+        sane = sane.replace(/(\w{6,})(\w{5,})\b/g, '$1- $2');
         return sane;
     }
 
