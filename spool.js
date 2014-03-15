@@ -1,9 +1,11 @@
-function spool() {
-    const DEFAULT_WPM = 200;
 
-   var getUserPreference = function(label) {
+function spool() {
+    'use strict';
+    var DEFAULT_WPM = 200;
+
+    var getUserPreference = function(label) {
         return window.localStorage.getItem(label);
-    }
+    };
 
     var setUserPreference = function(key, value) {
         return window.localStorage.setItem(key, value);
@@ -12,9 +14,9 @@ function spool() {
     var defaultWpm = function() {
         if (getUserPreference('spool-wpm')) {
             return getUserPreference('spool-wpm');
-        } else {
-            return DEFAULT_WPM;
         }
+
+        return DEFAULT_WPM;
     };
 
     var spool = { };
@@ -30,10 +32,9 @@ function spool() {
     var naturalPairAdjustment = function(pos, word, pair) {
         if (pos > 0 && word[pos] === pair[1] && word[pos-1] === pair[0]) {
             return 1;
-        } else {
-            return 0;
         }
-    }
+        return 0;
+    };
 
     var _fudgeORama = function (pos, word) {
         var wLength = word.replace(/\W$/g, '').length;
@@ -68,12 +69,10 @@ function spool() {
         var wordBuildupContainer = $('<span>');
         workingPane.append(wordBuildupContainer);
         var widthBeforeAddingLetter = 0;
-        var letterWidth = 0;
         var positionInWord;
         for (positionInWord = 0; positionInWord < word.length && wordBuildupContainer.width() < wholeWordContainer.width() / 2; ++positionInWord) {
             widthBeforeAddingLetter = wordBuildupContainer.width();
             wordBuildupContainer.text(wordBuildupContainer.text() + word[positionInWord]);
-            letterWidth = wordBuildupContainer.width() - widthBeforeAddingLetter;
         }
         positionInWord--;
         positionInWord = _fudgeORama(positionInWord, word);
@@ -81,12 +80,12 @@ function spool() {
         wholeWordContainer.remove();
         wordBuildupContainer.remove();
 
-        var wordDisplay = $('<p id="display-word">')
+        var wordDisplay = $('<p id="display-word">');
         workingPane.append(wordDisplay);
-        var beforeOlpLetters = $('<span>')
+        var beforeOlpLetters = $('<span>');
         beforeOlpLetters.text(word.substring(0, positionInWord));
         wordDisplay.append(beforeOlpLetters);
-        var olpLetter = $('<span class="olp">')
+        var olpLetter = $('<span class="olp">');
         olpLetter.text(word[positionInWord]);
         wordDisplay.append(olpLetter);
         var afterOlpLetters = $('<span>');
@@ -101,7 +100,7 @@ function spool() {
     };
 
     var buildReadBox = function() {
-        var style = $('<style type="text/css">')
+        var style = $('<style type="text/css">');
         style.html('.spool-read-box{font-size:2em;z-index:2;position:fixed;height:2.5em;width:10em;font-family:sans}.spool-read-box p{padding:0;display:inline}.spool-read-box .marker{height:.75em;padding:0;width:50%;border-right:1px solid red}.spool-read-box .container{width:100%;display:inline-block;background-color:#fff}.spool-read-box .controls{background-color:#fff;opacity:0;font-size:.5em;width:80%;padding-left:10%;padding-right:10%}.spool-read-box:hover .controls{opacity:1}.spool-read-box .controls .navigation-preview{padding:0 .1em}.spool-read-box .controls .control-group{display:inline-block;padding:1%}.spool-read-box .navigation-preview{font-size:.5em}.olp,.spool-read-box .controls .navigation-preview.on{color:red}');
         $(document.body).append(style);
 
@@ -114,7 +113,9 @@ function spool() {
             .append(controls).hide();
 
         return contentArea;
-    }
+    };
+    
+    var lastWordLength;
 
     var _readBox = spool.readBox = {
         contentArea: buildReadBox(),
@@ -125,9 +126,8 @@ function spool() {
             var shouldDelay = false;
 
             shouldDelay |= word === 'I';
-            var this_function = arguments.callee;
-            shouldDelay |= (this_function.previousWord && this_function.previousWord.length === word.length)
-            this_function.previousWord = word;
+            shouldDelay |= (lastWordLength && lastWordLength === word.length);
+            lastWordLength = word.length;
 
             if (shouldDelay) {
                 this.pause();
@@ -142,7 +142,7 @@ function spool() {
             }
 
             var newWordData = buildOlpWord(word);
-            var textHolder = newWordData.element
+            var textHolder = newWordData.element;
             textHolder.insertBefore($('.marker', this.contentArea).last());
 
             var center = textHolder.parent().offset().left + (textHolder.parent().width() / 2);
@@ -182,7 +182,7 @@ function spool() {
 
         start: function(words, finishedCallback) {
             this.words = words.slice(0);
-            if (this.words.length == 0) {
+            if (this.words.length === 0) {
                 return;
             }
             this.nextWordIndex = 0;
