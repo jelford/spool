@@ -348,7 +348,7 @@ function spool() {
         paragraphNode.fadeTo('fast', 0.5);
     }
 
-    var sanitizeText = window.sane = function(text) {
+    var sanitizeText = (window.sane = function(text) {
         var sane = text.trim();
         
         // get rid of dodgey double-hyphenation
@@ -359,11 +359,12 @@ function spool() {
 
         // try to split long words according to natural rules
         sane = sane.replace(/(\w{7,})([aeiou]\w{3,})\b/g, '$1- $2');
+        sane = sane.replace(/(\w{4,})(\W)(\w{2,})/g, '$1 $2 $3');
 
         // split any remaining big words
         sane = sane.replace(/(\w{6,})(\w{5,})\b/g, '$1- $2');
         return sane;
-    }
+    });
 
     var ensureCoordinatesOnScreen = function(coords, margin) {
         var scrollBottom = $(window).scrollTop() + $(window).height();
