@@ -154,9 +154,13 @@ function spool() {
                 this.finishedCallback();
             }
 
-            var word = this.words[this.nextWordIndex++];
-            this.displayWord(word);
-            this.increaseDelayForTrickyWord(word);
+            var indexOfWordToDisplayNow = this.nextWordIndex++;
+
+            if (indexOfWordToDisplayNow < this.words.length) {
+                var word = this.words[indexOfWordToDisplayNow];
+                this.displayWord(word);
+                this.increaseDelayForTrickyWord(word);
+            }
         },
 
         pause: function() {
