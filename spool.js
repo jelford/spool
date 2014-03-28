@@ -392,7 +392,7 @@ function spool() {
         
         // split hypenated words
         sane = sane.replace(/(\w)([-:@])(\w+)/g, '$1$2 $3');
-        sane = sane.replace(/(\w{2,})([^\w\s])(\w{2,})/g, '$1 $2 $3');
+        sane = sane.replace(/(\w{2,})([^\w\s])(\w{4,})/g, '$1 $2 $3');
 
         // try to split long words according to natural rules
         sane = sane.replace(/(\w{7,})([aeiou]\w{3,})\b/g, '$1- $2');
