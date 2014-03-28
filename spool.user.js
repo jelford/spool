@@ -3,7 +3,7 @@
 // @match <all_urls>
 // @name spool
 // @namespace com.jameselford.scripts
-// @require https://ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js
+// @require https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js
 // @require https://raw.github.com/jelford/spool/706aae2110bbe41eac7ac7e3ce9ef03a71a0533e/spool.js
 // @version 0.1.7_1
 // @grant none
