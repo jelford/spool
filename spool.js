@@ -101,7 +101,7 @@ function spool() {
 
     var buildReadBox = function() {
         var style = $('<style type="text/css">');
-        style.html('.spool-read-box{font-size:2em;z-index:2;position:fixed;height:2.5em;width:10em;font-family:sans}.spool-read-box p{padding:0;display:inline}.spool-read-box .marker{height:.75em;padding:0;width:50%;border-right:1px solid red}.spool-read-box .container{width:100%;display:inline-block;background-color:#fff}.spool-read-box .controls{background-color:#fff;opacity:0;font-size:.5em;width:80%;padding-left:10%;padding-right:10%}.spool-read-box:hover .controls{opacity:1}.spool-read-box .controls .navigation-preview{padding:0 .1em}.spool-read-box .controls .control-group{display:inline-block;padding:1%}.spool-read-box .navigation-preview{font-size:.5em}.olp,.spool-read-box .controls .navigation-preview.on{color:red}');
+        style.html('.spool-read-box{font-size:2em!important;z-index:2;position:fixed;height:2.5em;width:10em;font-family:sans!important}.spool-read-box p{padding:0;display:inline}.spool-read-box .marker{height:.75em;padding:0;width:50%;border-right:1px solid red}.spool-read-box .container{width:100%;display:inline-block;background-color:#fff}.spool-read-box .controls{background-color:#fff;opacity:0;font-size:.5em;width:80%;padding-left:10%;padding-right:10%}.spool-read-box:hover .controls{opacity:1}.spool-read-box .controls .navigation-preview{padding:0 .1em}.spool-read-box .controls .control-group{display:inline-block;padding:1%}.spool-read-box .navigation-preview{font-size:.5em}.olp,.spool-read-box .controls .navigation-preview.on{color:red}');
         $(document.body).append(style);
 
         var controls = spool.controls = $('<div class="controls">');
@@ -150,13 +150,13 @@ function spool() {
         },
         spoolNextWord: function() {
 
-            var word = this.words[this.nextWordIndex++];
-            this.displayWord(word);
-            this.increaseDelayForTrickyWord(word);
-
             if (this.nextWordIndex >= this.words.length) {
                 this.finishedCallback();
             }
+
+            var word = this.words[this.nextWordIndex++];
+            this.displayWord(word);
+            this.increaseDelayForTrickyWord(word);
         },
 
         pause: function() {
@@ -211,7 +211,7 @@ function spool() {
         var wpmLabel = $('<span>wpm:</span>');
         var wpmSetting = $('<select>');
 
-        for (var i = 150; i < 800; i += 50) {
+        for (var i = 100; i < 800; i += 50) {
             wpmSetting.append($('<option>').text(i).prop('selected', i == defaultWpm()));
         }
 
@@ -262,8 +262,8 @@ function spool() {
 
             var newNextWordIndex = Math.min(Math.max(_readBox.nextWordIndex - 1 - howFar, 0), _readBox.words.length - 1);
 
-            beforeIndex = newNextWordIndex - 1;
-            afterIndex = newNextWordIndex + 1;
+            var beforeIndex = newNextWordIndex - 1;
+            var afterIndex = newNextWordIndex + 1;
 
             var word = _readBox.words[newNextWordIndex];
             _readBox.displayWord(word);
@@ -287,6 +287,11 @@ function spool() {
                     navigationMouseEventData.used = true;
 
                     _readBox.active = navigationMouseEventData.readBoxActive;
+                    if (_readBox.active) {
+                        if ($(event.target).closest(_readBox.contentArea).length === 0) {
+                            _readBox.resume();
+                        }
+                    }
 
                     beforeWord.hide();
                     afterWord.hide();
